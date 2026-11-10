@@ -1,3 +1,9 @@
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    rootProject.file("local.properties").inputStream().use { load(it) }
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -17,6 +23,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField(
+            "String",
+            "DOG_API_KEY",
+            "\"${localProperties.getProperty("DOG_API_KEY", "")}\""
+        )
     }
 
     buildTypes {
@@ -32,6 +43,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -45,10 +57,19 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     testImplementation(libs.junit)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation("androidx.compose.material:material-icons-extended")
+    // Retrofit – API communication
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+// Glide – Dog image loading
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
+// Navigation – Moving between Compose screens
+    implementation("androidx.navigation:navigation-compose:2.8.5")
 }
