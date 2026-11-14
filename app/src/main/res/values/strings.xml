@@ -1,3 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">PetAdoptionExplorer</string>
+    <string name="pet_adoption_explorer_title">Pet Adoption Explorer 🐾</string>
+    <string name="search_dog_breeds">Search dog breeds</string>
+    <string name="filter_dogs">Filter dogs</string>
+    <string name="filter_all">All</string>
+    <string name="breed_group">Breed group</string>
+    <string name="origin">Origin</string>
+    <string name="clear_filters">Clear filters</string>
+    <string name="settings">Settings</string>
+    <string name="open_settings">Open settings</string>
+    <string name="back">Back</string>
+    <string name="appearance">Appearance</string>
+    <string name="dark_theme">Dark theme</string>
+    <string name="dark_theme_description">Use a darker color scheme in the app.</string>
+    <string name="settings_note">Your theme choice is saved on this device and will be remembered next time you open the app.</string>
+    <string name="choose_filter">Choose %1$s</string>
+    <string name="no_dogs_found">No dog breeds found.</string>
+    <string name="search_no_results">No breeds match your search and selected filters.</string>
+    <string name="unable_to_load_dogs">Unable to load dogs: %1$s</string>
 </resources>
