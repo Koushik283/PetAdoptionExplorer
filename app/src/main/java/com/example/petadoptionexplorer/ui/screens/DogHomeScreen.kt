@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -25,21 +26,27 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.petadoptionexplorer.BuildConfig
 import com.example.petadoptionexplorer.R
+import com.example.petadoptionexplorer.data.local.DogRepository
 import com.example.petadoptionexplorer.data.remote.RetrofitInstance
 import com.example.petadoptionexplorer.model.Dog
 import com.example.petadoptionexplorer.ui.components.DogCard
 import com.example.petadoptionexplorer.ui.components.DogFilterSection
+import kotlinx.coroutines.launch
 
 @Composable
 fun DogHomeScreen(
+    repository: DogRepository,
     onDogClick: (Dog) -> Unit,
+    onFavoritesClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
     var dogs by remember { mutableStateOf<List<Dog>>(emptyList()) }
@@ -48,6 +55,8 @@ fun DogHomeScreen(
     var searchText by remember { mutableStateOf("") }
     var selectedBreedGroup by remember { mutableStateOf("All") }
     var selectedOrigin by remember { mutableStateOf("All") }
+    val favoriteIds by repository.observeFavoriteIds().collectAsState(initial = emptySet())
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         try {
@@ -90,14 +99,24 @@ fun DogHomeScreen(
             ) {
                 Text(
                     text = stringResource(R.string.pet_adoption_explorer_title),
-                    style = MaterialTheme.typography.headlineSmall
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.weight(1f)
                 )
 
-                IconButton(onClick = onSettingsClick) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = stringResource(R.string.open_settings)
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onFavoritesClick) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = stringResource(R.string.favourites)
+                        )
+                    }
+
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.open_settings)
+                        )
+                    }
                 }
             }
 
@@ -161,7 +180,16 @@ fun DogHomeScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(filteredDogs, key = { it.id }) { dog ->
-                            DogCard(dog = dog, onClick = { onDogClick(dog) })
+                            DogCard(
+                                dog = dog,
+                                isFavorite = dog.id in favoriteIds,
+                                onClick = { onDogClick(dog) },
+                                onFavoriteClick = {
+                                    coroutineScope.launch {
+                                        repository.toggleFavorite(dog)
+                                    }
+                                }
+                            )
                         }
                     }
                 }

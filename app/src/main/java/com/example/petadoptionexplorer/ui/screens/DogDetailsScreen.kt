@@ -6,22 +6,38 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.bumptech.glide.Glide
+import com.example.petadoptionexplorer.data.local.DogRepository
 import com.example.petadoptionexplorer.model.Dog
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DogDetailsScreen(
     dog: Dog,
+    repository: DogRepository,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val favoriteIds by repository.observeFavoriteIds().collectAsState(initial = emptySet())
+    val isFavorite = dog.id in favoriteIds
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(dog.id) {
+        // Initial state is handled via the Flow collection above.
+    }
 
     Scaffold(
         topBar = {
@@ -32,6 +48,20 @@ fun DogDetailsScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Go back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                repository.toggleFavorite(dog)
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = if (isFavorite) "Remove from favourites" else "Save to favourites"
                         )
                     }
                 }
