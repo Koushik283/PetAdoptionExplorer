@@ -1,3 +1,4 @@
+
 package com.example.petadoptionexplorer.ui.screens
 
 import android.widget.ImageView
@@ -19,7 +20,8 @@ import com.example.petadoptionexplorer.model.Dog
 @Composable
 fun DogDetailsScreen(
     dog: Dog,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onAdopt: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -62,20 +64,29 @@ fun DogDetailsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(Modifier.height(20.dp))
 
             Text(
                 text = dog.name,
                 style = MaterialTheme.typography.headlineMedium
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
             DetailItem("Breed Group", dog.breed_group)
             DetailItem("Bred For", dog.bred_for)
             DetailItem("Temperament", dog.temperament)
             DetailItem("Life Span", dog.life_span)
             DetailItem("Origin", dog.origin)
+
+            Spacer(Modifier.height(24.dp))
+
+            Button(
+                onClick = onAdopt,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Apply to Adopt")
+            }
         }
     }
 }
