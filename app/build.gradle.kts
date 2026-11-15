@@ -7,6 +7,7 @@ val localProperties = Properties().apply {
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp") version "2.2.10-2.0.2"
 }
 
 android {
@@ -67,10 +68,15 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 
-// Glide – Dog image loading
+    // Room – Local favourites persistence
+    implementation("androidx.room:room-runtime:2.7.2")
+    implementation("androidx.room:room-ktx:2.7.2")
+    ksp("androidx.room:room-compiler:2.7.2")
+
+    // Glide – Dog image loading
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
-// Navigation – Moving between Compose screens
+    // Navigation – Moving between Compose screens
     implementation("androidx.navigation:navigation-compose:2.8.5")
 
 // Room Database

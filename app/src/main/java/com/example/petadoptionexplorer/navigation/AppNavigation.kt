@@ -6,21 +6,29 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.petadoptionexplorer.data.local.AppDatabase
+import com.example.petadoptionexplorer.data.local.DogRepository
 import com.example.petadoptionexplorer.model.Dog
 import com.example.petadoptionexplorer.model.AdoptionRequest
 import com.example.petadoptionexplorer.ui.screens.DogDetailsScreen
 import com.example.petadoptionexplorer.ui.screens.DogHomeScreen
 import com.example.petadoptionexplorer.ui.screens.AdoptionRequestScreen
+import com.example.petadoptionexplorer.ui.screens.FavoritesScreen
+import com.example.petadoptionexplorer.ui.screens.SettingsScreen
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(onThemeChanged: (Boolean) -> Unit) {
+    val context = LocalContext.current.applicationContext
+    val repository = remember {
+        DogRepository(AppDatabase.getInstance(context).dogDao())
+    }
 
     val navController = rememberNavController()
-
     var selectedDog by remember { mutableStateOf<Dog?>(null) }
     var submittedRequest by remember {
         mutableStateOf<AdoptionRequest?>(null)
@@ -30,12 +38,31 @@ fun AppNavigation() {
         navController = navController,
         startDestination = "home"
     ) {
-
         composable("home") {
             DogHomeScreen(
+                repository = repository,
                 onDogClick = { dog ->
                     selectedDog = dog
                     navController.navigate("details")
+                },
+                onFavoritesClick = {
+                    navController.navigate("favorites")
+                },
+                onSettingsClick = {
+                    navController.navigate("settings")
+                }
+            )
+        }
+
+        composable("favorites") {
+            FavoritesScreen(
+                repository = repository,
+                onDogClick = { dog ->
+                    selectedDog = dog
+                    navController.navigate("details")
+                },
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }
@@ -44,8 +71,13 @@ fun AppNavigation() {
             selectedDog?.let { dog ->
                 DogDetailsScreen(
                     dog = dog,
-                    onBack = { navController.popBackStack() },
-                    onAdopt = { navController.navigate("adoption") }
+                    repository = repository,
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onAdopt = {
+                        navController.navigate("adoption")
+                    }
                 )
             }
         }
@@ -55,7 +87,9 @@ fun AppNavigation() {
                 AdoptionRequestScreen(
                     dogId = dog.id,
                     dogName = dog.name,
-                    onBack = { navController.popBackStack() },
+                    onBack = {
+                        navController.popBackStack()
+                    },
                     onSubmit = { request ->
                         submittedRequest = request
                         navController.navigate("confirmation")
@@ -98,6 +132,15 @@ fun AppNavigation() {
                     Text("Back to Home")
                 }
             }
+        }
+
+        composable("settings") {
+            SettingsScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onThemeChanged = onThemeChanged
+            )
         }
     }
 }
