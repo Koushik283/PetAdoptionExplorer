@@ -1,3 +1,4 @@
+
 package com.example.petadoptionexplorer.ui.screens
 
 import android.widget.ImageView
@@ -9,11 +10,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -28,16 +25,14 @@ import kotlinx.coroutines.launch
 fun DogDetailsScreen(
     dog: Dog,
     repository: DogRepository,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onAdopt: () -> Unit
 ) {
     val context = LocalContext.current
-    val favoriteIds by repository.observeFavoriteIds().collectAsState(initial = emptySet())
+    val favoriteIds by repository.observeFavoriteIds()
+        .collectAsState(initial = emptySet())
     val isFavorite = dog.id in favoriteIds
     val coroutineScope = rememberCoroutineScope()
-
-    LaunchedEffect(dog.id) {
-        // Initial state is handled via the Flow collection above.
-    }
 
     Scaffold(
         topBar = {
@@ -45,10 +40,7 @@ fun DogDetailsScreen(
                 title = { Text(dog.name) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Go back"
-                        )
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Go back")
                     }
                 },
                 actions = {
@@ -60,15 +52,16 @@ fun DogDetailsScreen(
                         }
                     ) {
                         Icon(
-                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                            contentDescription = if (isFavorite) "Remove from favourites" else "Save to favourites"
+                            imageVector = if (isFavorite) Icons.Filled.Favorite
+                            else Icons.Outlined.FavoriteBorder,
+                            contentDescription = if (isFavorite) "Remove from favourites"
+                            else "Save to favourites"
                         )
                     }
                 }
             )
         }
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -76,7 +69,6 @@ fun DogDetailsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-
             dog.image?.url?.let { imageUrl ->
                 AndroidView(
                     factory = { ImageView(it) },
@@ -92,39 +84,34 @@ fun DogDetailsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = dog.name,
-                style = MaterialTheme.typography.headlineMedium
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
+            Text(dog.name, style = MaterialTheme.typography.headlineMedium)
+            Spacer(Modifier.height(16.dp))
 
             DetailItem("Breed Group", dog.breed_group)
             DetailItem("Bred For", dog.bred_for)
             DetailItem("Temperament", dog.temperament)
             DetailItem("Life Span", dog.life_span)
             DetailItem("Origin", dog.origin)
+
+            Spacer(Modifier.height(24.dp))
+
+            Button(
+                onClick = onAdopt,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Apply to Adopt")
+            }
         }
     }
 }
 
 @Composable
-private fun DetailItem(
-    label: String,
-    value: String?
-) {
+private fun DetailItem(label: String, value: String?) {
     if (!value.isNullOrBlank()) {
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyLarge
-            )
+            Text(label, style = MaterialTheme.typography.titleMedium)
+            Text(value, style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
