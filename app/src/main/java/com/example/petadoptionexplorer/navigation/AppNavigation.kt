@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.petadoptionexplorer.data.local.AppDatabase
+import com.example.petadoptionexplorer.data.local.AdoptionRequestEntity
 import com.example.petadoptionexplorer.data.local.DogRepository
 import com.example.petadoptionexplorer.model.Dog
 import com.example.petadoptionexplorer.model.AdoptionRequest
@@ -20,24 +21,44 @@ import com.example.petadoptionexplorer.ui.screens.DogHomeScreen
 import com.example.petadoptionexplorer.ui.screens.AdoptionRequestScreen
 import com.example.petadoptionexplorer.ui.screens.FavoritesScreen
 import com.example.petadoptionexplorer.ui.screens.SettingsScreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavigation(onThemeChanged: (Boolean) -> Unit) {
+
     val context = LocalContext.current.applicationContext
+
+    val database = remember {
+        AppDatabase.getInstance(context)
+    }
+
     val repository = remember {
-        DogRepository(AppDatabase.getInstance(context).dogDao())
+        DogRepository(database.dogDao())
     }
 
     val navController = rememberNavController()
+    val coroutineScope = rememberCoroutineScope()
+
     var selectedDog by remember { mutableStateOf<Dog?>(null) }
     var submittedRequest by remember {
         mutableStateOf<AdoptionRequest?>(null)
+    }
+
+    // Temporary database verification
+    LaunchedEffect(Unit) {
+        val requests = database.adoptionRequestDao().getAllRequests()
+
+        android.util.Log.d(
+            "ADOPTION_CHECK",
+            "Saved adoption requests: ${requests.size}"
+        )
     }
 
     NavHost(
         navController = navController,
         startDestination = "home"
     ) {
+
         composable("home") {
             DogHomeScreen(
                 repository = repository,
@@ -91,8 +112,33 @@ fun AppNavigation(onThemeChanged: (Boolean) -> Unit) {
                         navController.popBackStack()
                     },
                     onSubmit = { request ->
-                        submittedRequest = request
-                        navController.navigate("confirmation")
+
+                        coroutineScope.launch {
+                            try {
+                                database.adoptionRequestDao().insertRequest(
+                                    AdoptionRequestEntity(
+                                        dogId = request.dogId,
+                                        dogName = request.dogName,
+                                        applicantName = request.applicantName,
+                                        email = request.email,
+                                        phone = request.phone,
+                                        address = request.address,
+                                        message = request.message,
+                                        submittedAt = request.submittedAt
+                                    )
+                                )
+
+                                submittedRequest = request
+                                navController.navigate("confirmation")
+
+                            } catch (e: Exception) {
+                                android.util.Log.e(
+                                    "ADOPTION_CHECK",
+                                    "Failed to save adoption request",
+                                    e
+                                )
+                            }
+                        }
                     }
                 )
             }
@@ -124,7 +170,9 @@ fun AppNavigation(onThemeChanged: (Boolean) -> Unit) {
                 Button(
                     onClick = {
                         navController.navigate("home") {
-                            popUpTo("home") { inclusive = false }
+                            popUpTo("home") {
+                                inclusive = false
+                            }
                             launchSingleTop = true
                         }
                     }
