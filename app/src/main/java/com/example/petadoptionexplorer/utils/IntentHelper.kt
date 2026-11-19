@@ -26,34 +26,37 @@ object IntentHelper {
         }
     }
 
+
     fun sendAdoptionEmail(
         context: Context,
         dogName: String,
         applicantName: String,
         applicantEmail: String
     ) {
-        val intent = Intent(Intent.ACTION_SENDTO).apply {
-            data = Uri.parse("mailto:")
-            putExtra(
-                Intent.EXTRA_SUBJECT,
-                "Adoption Request - $dogName"
-            )
-            putExtra(
-                Intent.EXTRA_TEXT,
-                """
-                Hello,
+        val recipientEmail = "petadaptation@support.com"
 
-                I would like to enquire about adopting $dogName.
+        val subject = "Adoption Request - $dogName"
 
-                Applicant Name: $applicantName
-                Applicant Email: $applicantEmail
+        val body = """
+        Hello,
 
-                Please contact me regarding the adoption process.
+        I would like to enquire about adopting $dogName.
 
-                Thank you.
-                """.trimIndent()
-            )
-        }
+        Applicant Name: $applicantName
+        Applicant Email: $applicantEmail
+
+        Please contact me regarding the adoption process.
+
+        Thank you.
+    """.trimIndent()
+
+        val emailUri = Uri.parse(
+            "mailto:$recipientEmail" +
+                    "?subject=${Uri.encode(subject)}" +
+                    "&body=${Uri.encode(body)}"
+        )
+
+        val intent = Intent(Intent.ACTION_SENDTO, emailUri)
 
         try {
             context.startActivity(intent)
@@ -65,4 +68,5 @@ object IntentHelper {
             ).show()
         }
     }
+
 }

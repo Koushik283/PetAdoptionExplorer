@@ -43,6 +43,9 @@ fun AppNavigation(onThemeChanged: (Boolean) -> Unit) {
     var submittedRequest by remember {
         mutableStateOf<AdoptionRequest?>(null)
     }
+    var adoptionError by remember {
+        mutableStateOf<String?>(null)
+    }
 
     // Temporary database verification
     LaunchedEffect(Unit) {
@@ -113,6 +116,7 @@ fun AppNavigation(onThemeChanged: (Boolean) -> Unit) {
                     },
                     onSubmit = { request ->
 
+                        adoptionError = null
                         coroutineScope.launch {
                             try {
                                 database.adoptionRequestDao().insertRequest(
@@ -137,9 +141,11 @@ fun AppNavigation(onThemeChanged: (Boolean) -> Unit) {
                                     "Failed to save adoption request",
                                     e
                                 )
+                                adoptionError = "Unable to submit your request. Please try again."
                             }
                         }
-                    }
+                    },
+                    submissionError = adoptionError
                 )
             }
         }

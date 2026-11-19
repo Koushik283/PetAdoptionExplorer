@@ -9,6 +9,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.petadoptionexplorer.model.AdoptionRequest
+import androidx.compose.ui.platform.LocalContext
+import com.example.petadoptionexplorer.utils.IntentHelper
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.OutlinedButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -16,8 +21,10 @@ fun AdoptionRequestScreen(
     dogId: Int,
     dogName: String,
     onBack: () -> Unit,
-    onSubmit: (AdoptionRequest) -> Unit
+    onSubmit: (AdoptionRequest) -> Unit,
+    submissionError: String? = null
 ) {
+    val context = LocalContext.current
     var applicantName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -53,6 +60,41 @@ fun AdoptionRequestScreen(
             )
 
             Text("Please provide your details to submit an adoption request.")
+            if (submissionError != null) {
+                Text(
+                    text = submissionError,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            OutlinedButton(
+                onClick = {
+                    IntentHelper.openAdoptionWebsite(context)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Read Adoption Guidelines")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = {
+                    if (applicantName.isBlank() || email.isBlank()) {
+                        errorMessage = "Please enter your name and email first."
+                    } else {
+                        IntentHelper.sendAdoptionEmail(
+                            context = context,
+                            dogName = dogName,
+                            applicantName = applicantName.trim(),
+                            applicantEmail = email.trim()
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Contact Us via Email")
+            }
 
             OutlinedTextField(
                 value = applicantName,
